@@ -5,35 +5,16 @@ output:
     keep_md: true
 ---
 
-
-
-## Imputing missing values
-
-## Are there differences in activity patterns between weekdays and weekends?
-
-# For this part the weekdays() function may be of some help here. Use the 
-# dataset with the filled-in missing values for this part.
-
-# Create a new factor variable in the dataset with two levels – “weekday” and 
-# “weekend” indicating whether a given date is a weekday or weekend day.
-
-
-
-# Make a panel plot containing a time series plot (i.e. type = "l") of the 
-# 5-minute interval (x-axis) and the average number of steps taken, averaged 
-# across all weekday days or weekend days (y-axis). See the README file in 
-# the GitHub repository to see an example of what this plot should look like using simulated data.
-
 ## Loading and preprocessing the data
 
-1. Load the data 
+**Load the data**
 
 ```{r, echo=TRUE}
 unzip("activity.zip")
 rawData<-read.csv("activity.csv",stringsAsFactors = FALSE)
 ```
 
-2. Process/transform the data into a format suitable for your analysis
+**Process/transform the data into a format suitable for your analysis**
 
 ```{r, echo=TRUE}
 library(dplyr)
@@ -43,26 +24,26 @@ rawData<-tbl_df(rawData)
 
 ## What is mean total number of steps taken per day?
 
-For this part of the assignment, you can ignore the missing values in
-the dataset.
+**For this part of the assignment, you can ignore the missing values in
+the dataset.**
 
 ```{r, echo=TRUE}
 filteredData<-filter(rawData,!is.na(steps))
 ```
 
-1. Calculate the total number of steps taken per day
+**Calculate the total number of steps taken per day**
 
 ```{r, echo=TRUE}
 DateData<-summarize(group_by(filteredData,date),total_steps=sum(steps))
 ```
 
-2. Make a histogram of the total number of steps taken each day
+**Make a histogram of the total number of steps taken each day**
 
 ```{r, echo=TRUE}
 hist(DateData$total_steps, breaks=20, main="Total steps by frequency", xlab="Number of steps per day", ylab="Frequency")
 ```
 
-3. Calculate and report the **mean** and **median** total number of steps taken per day
+**Calculate and report the mean and median total number of steps taken per day**
 
 ```{r, echo=TRUE}
 mean(DateData$total_steps)
@@ -71,14 +52,14 @@ median(DateData$total_steps)
 
 ### What is the average daily activity pattern?
 
-1. Make a time series plot (i.e. `type = "l"`) of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all days (y-axis)
+**Make a time series plot (i.e. `type = "l"`) of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all days (y-axis)**
 
 ```{r, echo=TRUE}
 IntervalData<-summarize(group_by(filteredData,interval),sum=sum(steps),mean=mean(steps))
 plot(IntervalData$interval,IntervalData$mean,type="l", main="Average Daily Activity", xlab="Interval", ylab="Average of Steps")
 ```
 
-2. Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?
+**Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?**
 
 ```{r, echo=TRUE}
 arrange(IntervalData,desc(sum))[1,1]
@@ -86,18 +67,18 @@ arrange(IntervalData,desc(sum))[1,1]
 
 ## Imputing missing values
 
-1. Calculate and report the total number of missing values in the dataset
+**Calculate and report the total number of missing values in the dataset**
 
 ```{r, echo=TRUE}
 Count<-table(is.na(rawData$steps))
 Count[names(Count)==TRUE]
 ```
 
-2. Devise a strategy for filling in all of the missing values in the dataset. 
+**Devise a strategy for filling in all of the missing values in the dataset.**
 
-I replaced the missing interval data with the averages I calculated from the remaining data.
+I'll replace the missing interval data with the averages I calculated from the remaining data.
 
-3. Create a new dataset that is equal to the original dataset but with the missing data filled in.
+**Create a new dataset that is equal to the original dataset but with the missing data filled in.**
 
 ```{r, echo=TRUE}
 fixedData<-rawData #copies original dataset
@@ -112,7 +93,7 @@ for (i in 1:fixedLength){ #uses length to iterate through dataset
 ```
 
 
-4. Make a histogram of the total number of steps taken each day and Calculate and report the **mean** and **median** total number of steps taken per day.
+**Make a histogram of the total number of steps taken each day and Calculate and report the mean and median total number of steps taken per day.**
 
 ```{r, echo=TRUE}
 DateData2<-summarize(group_by(fixedData,date),total_steps=sum(steps))
@@ -121,68 +102,35 @@ mean(DateData2$total_steps)
 median(DateData2$total_steps)
 ```
 
-Do these values differ from the estimates from the first part of the assignment? 
+**Do these values differ from the estimates from the first part of the assignment?**
 
 Yes, except for the mean.
 
-What is the impact of imputing missing data on the estimates of the total daily number of steps?
+**What is the impact of imputing missing data on the estimates of the total daily number of steps?**
 
-Since the missing data was replaced with averages, the frequency of the middle values is raised. This affects the median, but not the mean.
+Since the missing data was replaced with averages, the frequency of those values is raised. This affects the median, but not the mean.
 
 ## Are there differences in activity patterns between weekdays and weekends?
 
-For this part the `weekdays()` function may be of some help here. Use
-the dataset with the filled-in missing values for this part.
+**For this part the `weekdays()` function may be of some help here. Use the dataset with the filled-in missing values for this part.**
 
-1. Create a new factor variable in the dataset with two levels -- "weekday" and "weekend" indicating whether a given date is a weekday or weekend day.
+**Create a new factor variable in the dataset with two levels -- "weekday" and "weekend" indicating whether a given date is a weekday or weekend day.**
 
 ```{r, echo=TRUE}
 library(lubridate)
-DayData<-mutate(fixedData,Day=wday(fixedData$date),Weekday=Day!=1&Day!=7) # Created new dataset adding day of the week
+DayData<-mutate(fixedData,Day=wday(fixedData$date),Weekday=Day!=1&Day!=7)
+```
+
+**Make a panel plot containing a time series plot (i.e. `type = "l"`) of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days (y-axis).**
+
+```{r, echo=TRUE}
+par(mfrow = c(1,2)) # place plots in 1 x 2 grid
 
 WeekdayData<- filter(DayData,Weekday) #filtered by weekdays
-WDayIntData<-summarize(group_by(WeekdayData,interval),mean=mean(steps)) #got interval data
+WDayIntData<-summarize(group_by(WeekdayData,interval),mean=mean(steps))
 plot(WDayIntData$interval,WDayIntData$mean,type="l",main="Weekday Activity", xlab="Interval", ylab="Average of Steps")
 
 WeekendData<-filter(DayData,!Weekday) #filtered by weekends
-WEndIntData<-summarize(group_by(WeekendData,interval),mean=mean(steps)) #got interval data
+WEndIntData<-summarize(group_by(WeekendData,interval),mean=mean(steps))
 plot(WEndIntData$interval,WEndIntData$mean,type="l",main="Weekend Activity", xlab="Interval", ylab="Average of Steps")
 ```
-
-1. Make a panel plot containing a time series plot (i.e. `type = "l"`) of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days (y-axis). The plot should look something like the following, which was created using **simulated data**:
-
-![Sample panel plot](instructions_fig/sample_panelplot.png) 
-
-
-**Your plot will look different from the one above** because you will
-be using the activity monitor data. Note that the above plot was made
-using the lattice system but you can make the same version of the plot
-using any plotting system you choose.
-
-
-## Submitting the Assignment
-
-To submit the assignment:
-
-1. Commit your completed `PA1_template.Rmd` file to the `master` branch of your git repository (you should already be on the `master` branch unless you created new ones)
-
-2. Commit your `PA1_template.md` and `PA1_template.html` files produced by processing your R markdown file with the `knit2html()` function in R (from the **knitr** package)
-
-3. If your document has figures included (it should) then they should have been placed in the `figure/` directory by default (unless you overrode the default). Add and commit the `figure/` directory to your git repository.
-
-4. Push your `master` branch to GitHub.
-
-5. Submit the URL to your GitHub repository for this assignment on the course web site.
-
-In addition to submitting the URL for your GitHub repository, you will
-need to submit the 40 character SHA-1 hash (as string of numbers from
-0-9 and letters from a-f) that identifies the repository commit that
-contains the version of the files you want to submit. You can do this
-in GitHub by doing the following:
-
-1. Go into your GitHub repository web page for this assignment
-
-2. Click on the "?? commits" link where ?? is the number of commits you have in the repository. For example, if you made a total of 10 commits to this repository, the link should say "10 commits".
-
-3. You will see a list of commits that you have made to this repository. The most recent commit is at the very top. If this represents the version of the files you want to submit, then just click the "copy to clipboard" button on the right hand side that should appear when you hover over the SHA-1 hash. Paste this SHA-1 hash into the course web site when you submit your assignment. If you don't want to use the most recent commit, then go down and find the commit you want and copy the SHA-1 hash.
-
