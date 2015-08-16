@@ -128,7 +128,7 @@ Count[names(Count)==TRUE]
 
 **Devise a strategy for filling in all of the missing values in the dataset.**
 
-I replaced the missing interval data with the averages I calculated from the remaining data.
+I'll replace the missing interval data with the averages I calculated from the remaining data.
 
 **Create a new dataset that is equal to the original dataset but with the missing data filled in.**
 
